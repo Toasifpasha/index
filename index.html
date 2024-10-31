@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .calendar div {
+            padding: 10px;
+            background: #e0e0e0;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        .highlight {
+            background-color: #ffd700;
+            font-weight: bold;
+        }
+        form, .buttons {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Event Calendar</h1>
+        <p>Organize your events and view them easily!</p>
+
+        <!-- Form to Add Event -->
+        <form id="eventForm">
+            <h2>Add an Event</h2>
+            <label>Title:</label>
+            <input type="text" id="title" required><br><br>
+
+            <label>Date (DD-MM-YYYY):</label>
+            <input type="number" id="day" min="1" max="31" required>
+            <input type="number" id="month" min="1" max="12" required>
+            <input type="number" id="year" min="1900" required><br><br>
+
+            <label>Time:</label>
+            <input type="time" id="time" required><br><br>
+
+            <label>Description:</label><br>
+            <textarea id="description" rows="4" cols="50" required></textarea><br><br>
+
+            <button type="button" onclick="addEvent()">Add Event</button>
+        </form>
+
+        <!-- Display Calendar -->
+        <div>
+            <h2>View Calendar</h2>
+            <label>Month:</label>
+            <input type="number" id="viewMonth" min="1" max="12" required>
+            <label>Year:</label>
+            <input type="number" id="viewYear" min="1900" required>
+            <button type="button" onclick="displayCalendar()">Show Calendar</button>
+        </div>
+
+        <!-- Display Calendar -->
+        <div id="calendar" class="calendar"></div>
+
+        <!-- Buttons for viewing events and history -->
+        <div class="buttons">
+            <button onclick="viewLastDate()">View Last Viewed Date</button>
+            <button onclick="viewEvents()">View Events on Date</button>
+        </div>
+
+        <!-- Display Events and Last Viewed Date -->
+        <div id="eventList"></div>
+        <div id="lastViewed"></div>
+    </div>
+
+    <script>
+        const events = [];
+        let dateHistory = [];
+
+        function addEvent() {
+            const title = document.getElementById("title").value;
+            const day = parseInt(document.getElementById("day").value);
+            const month = parseInt(document.getElementById("month").value);
+            const year = parseInt(document.getElementById("year").value);
+            const time = document.getElementById("time").value;
+            const description = document.getElementById("description").value;
+
+            events.push({ day, month, year, title, time, description });
+            alert("Event added successfully!");
+
+            document.getElementById("eventForm").reset();
+        }
+
+        function displayCalendar() {
+            const month = parseInt(document.getElementById("viewMonth").value);
+            const year = parseInt(document.getElementById("viewYear").value);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const startDay = new Date(year, month - 1, 1).getDay();
+
+            const calendarDiv = document.getElementById("calendar");
+            calendarDiv.innerHTML = "";
+
+            // Fill the start empty spaces
+            for (let i = 0; i < startDay; i++) {
+                const emptyDiv = document.createElement("div");
+                calendarDiv.appendChild(emptyDiv);
+            }
+
+            // Populate calendar days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayDiv = document.createElement("div");
+                dayDiv.textContent = i;
+
+                // Highlight days with events
+                if (events.some(event => event.day === i && event.month === month && event.year === year)) {
+                    dayDiv.classList.add("highlight");
+                }
+
+                calendarDiv.appendChild(dayDiv);
+            }
+
+            dateHistory.push({ month, year });
+        }
+
+        function viewEvents() {
+            const day = parseInt(prompt("Enter day to view events"));
+            const month = parseInt(prompt("Enter month"));
+            const year = parseInt(prompt("Enter year"));
+
+            const filteredEvents = events.filter(event => event.day === day && event.month === month && event.year === year);
+
+            const eventListDiv = document.getElementById("eventList");
+            eventListDiv.innerHTML = `<h3>Events on ${day}-${month}-${year}:</h3>`;
+
+            if (filteredEvents.length === 0) {
+                eventListDiv.innerHTML += "<p>No events found.</p>";
+            } else {
+                filteredEvents.forEach(event => {
+                    eventListDiv.innerHTML += `<p>Title: ${event.title}<br>Time: ${event.time}<br>Description: ${event.description}</p><hr>`;
+                });
+            }
+        }
+
+        function viewLastDate() {
+            const lastDate = dateHistory[dateHistory.length - 2];  // previous date viewed
+
+            if (lastDate) {
+                const { month, year } = lastDate;
+                displayCalendar(month, year);
+
+                document.getElementById("lastViewed").innerHTML = `<p>Last viewed date: ${month}-${year}</p>`;
+            } else {
+                alert("No previously viewed dates.");
+            }
+        }
+    </script>
+</body>
+</html>
